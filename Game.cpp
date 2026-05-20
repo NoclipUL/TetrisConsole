@@ -64,7 +64,17 @@ void Game::update() {
             // Place block and spawn new one
             board.placeBlock(currentBlock);
             int cleared = board.removeLine();
-            score += cleared * 100;
+
+            switch (cleared) {
+                case 1: score += 100;
+            break;
+                case 2: score += 300;
+            break;
+                case 3: score += 500;
+            break;
+                case 4: score += 800;
+            break;
+            }
             spawnNewBlock();
             if (!board.canMove(currentBlock, 0, 0)) {
                 isRunning = false;
