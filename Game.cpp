@@ -7,7 +7,7 @@
 #include <iostream>
 
 Game::Game() 
-    : score(0), currentBlock(rand() % 7, 5, 0), nextBlock(rand() % 7, 5, 0), isRunning(true) {
+    : score(0), totalLinesRemoved(0), currentBlock(rand() % 7, 5, 0), nextBlock(rand() % 7, 5, 0), isRunning(true) {
     board.init();
     Input::setupConsole();
     // lần rơi cuối là hiện tại
@@ -19,6 +19,15 @@ Game::~Game() {
 }
 int Game::getRandomBlockType() const {
     return rand() % 7;
+}
+
+int Game::getLevel() const {
+    return totalLinesRemoved / 10 + 1;
+}
+
+int Game::getDropInterval() const {
+    int interval = 500 - (getLevel() - 1) * 40;
+    return interval < 100 ? 100 : interval;
 }
 
 void Game::spawnNewBlock() {
@@ -56,7 +65,7 @@ void Game::update() {
     if (!isRunning) return;
     auto now = chrono::steady_clock::now();
     auto elapsed = chrono::duration_cast<chrono::milliseconds>(now - lastFallTime).count();
-    if (elapsed >= 500)
+    if (elapsed >= getDropInterval())
     {
         if (board.canMove(currentBlock, 0, 1)) {
         currentBlock.moveY(1);
@@ -75,6 +84,7 @@ void Game::update() {
                 case 4: score += 800;
             break;
             }
+            totalLinesRemoved += cleared;
             spawnNewBlock();
             if (!board.canMove(currentBlock, 0, 0)) {
                 isRunning = false;
@@ -93,6 +103,7 @@ void Game::update() {
     // Draw
     board.draw(nextBlock);
     cout << "Score: " << score << endl;
+    cout << "Level: " << getLevel() << endl;
     
     // Game loop speed
     this_thread::sleep_for(chrono::milliseconds(30));
@@ -116,6 +127,7 @@ bool Game::isGameOver() const {
 int Game::getScore() const {
     return score;
 }
+
 void Game::saveScore() {
     ofstream file("score.txt", ios::app);
 
